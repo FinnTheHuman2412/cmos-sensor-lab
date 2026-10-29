@@ -1,0 +1,22 @@
+{
+  "title": "CMOS Dynamic Range Lab",
+  "model": "Simplified dual-conversion-gain sensor with ADC saturation",
+  "parameters": {
+    "hcgConversionGainUvPerElectron": 160,
+    "lcgConversionGainUvPerElectron": 20,
+    "hcgAnalogGain": 10,
+    "lcgAnalogGain": 1,
+    "readNoiseElectrons": 2,
+    "fullWellElectrons": 30000,
+    "adcRangeVolts": 0.8,
+    "adcBits": 10,
+    "prnuPercent": 0
+  },
+  "notes": [
+    "A phenomenological model, not a measured sensor or transistor-level simulation.",
+    "Read noise is treated as a fixed input-referred value for both paths.",
+    "Each path saturates at the smaller of the photodiode full well and its ADC input range.",
+    "PRNU is optional and approximated as a signal-proportional RMS term.",
+    "The combined path switches from HCG to LCG at HCG saturation, without overlap calibration."
+  ]
+}

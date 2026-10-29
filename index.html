@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a101c">
+  <title>CMOS Dynamic Range Lab</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+<div class="shell">
+  <header class="header">
+    <div><div class="eyebrow">CMOS IMAGE SENSOR / INTERACTIVE LAB</div><h1>Dynamic Range <span>Explorer</span></h1><p>Explore conversion gain, noise, ADC headroom, and the HCG → LCG transition.</p></div>
+    <div class="header-actions"><button id="reset" class="button secondary">↺ Reset</button><button id="export" class="button">↓ Export CSV</button></div>
+  </header>
+  <main class="layout">
+    <section class="panel chart-panel">
+      <div class="section-head"><div><h2>SNR vs. signal level</h2><p>Input-referred electrons · logarithmic horizontal axis</p></div><div class="toggle"><button class="active" data-mode="combined">Combined DCG</button><button data-mode="both">HCG / LCG</button></div></div>
+      <div class="chart-wrap"><canvas id="chart" aria-label="Signal-to-noise ratio graph" role="img"></canvas><div id="tooltip" class="tooltip" hidden></div></div>
+      <div class="legend"><span><i class="dot cyan"></i>HCG</span><span><i class="dot amber"></i>LCG</span><span><i class="dot green"></i>Combined</span><span><i class="dot dash"></i>HCG transition</span></div>
+      <div class="metrics"><article><small>HCG saturation</small><strong id="hcg-sat">—</strong><span>electrons</span></article><article><small>LCG saturation</small><strong id="lcg-sat">—</strong><span>electrons</span></article><article><small>Combined DR (model)</small><strong id="dynamic-range">—</strong><span>dB · saturation / dark RMS noise</span></article></div>
+      <div id="insight" class="insight"></div>
+    </section>
+    <aside class="panel controls"><div class="section-head"><div><h2>Sensor parameters</h2><p>Change a parameter to recalculate instantly</p></div></div><div id="controls"></div><div class="note"><strong>Model assumptions</strong><p>Photon shot noise + read noise + ADC quantization + optional PRNU. The model omits dark current, analog bandwidth, gain-dependent amplifier noise, and switching artifacts. It is not a Cadence simulation.</p></div></aside>
+  </main>
+  <footer><span>Educational analytical model · Not silicon characterization</span><span>Configuration: <code>config.json</code></span></footer>
+</div>
+</body>
+</html>
