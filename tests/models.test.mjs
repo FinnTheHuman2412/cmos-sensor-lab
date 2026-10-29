@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {conversionGainUv,capacitanceFf,noiseElectrons,snrDb,snrThreshold,limitElectrons,dynamicRangeDb,cdsTransfer,frameTiming,rampAdc,combinedSnrDb} from '../js/models.js';
+const p=JSON.parse(readFileSync(new URL('../config/sensor.json',import.meta.url)));
+const close=(a,b,t=.001)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
+close(conversionGainUv(2),80.1088,.01);close(capacitanceFf(80.1088),2,.001);
+assert.ok(noiseElectrons(p,true)<noiseElectrons(p,false));
+assert.ok(limitElectrons(p,true)<limitElectrons(p,false));
+close(snrDb(snrThreshold(p,true),p,true),0,1e-9);
+assert.ok(dynamicRangeDb(p)>0);assert.ok(Number.isFinite(combinedSnrDb(100,p)));
+close(cdsTransfer(0,1e-4),0);close(cdsTransfer(5000,1e-4),2);
+const t=frameTiming(2160,240,6.944,100);close(t.fps,60.0038,.03);
+assert.equal(rampAdc(0,.64,10),0);assert.equal(rampAdc(.64,.64,10),1023);
+console.log('All model checks passed');

@@ -1,35 +1,41 @@
-# CMOS Dynamic Range Lab
+# CMOS Sensor Lab — interactive engineering website
 
-A standalone educational SNR explorer. No npm, external libraries, or internet connection required.
+Five pages, static HTML/CSS/JavaScript/JSON. No external packages or internet needed.
 
-## Run
+## Run on Windows
+1. Extract the ZIP to `projects_CIS/cmos-sensor-lab`.
+2. Open a command prompt in that directory and run `python -m http.server 8000`.
+3. Visit `http://localhost:8000`.
 
-From this folder:
+Linux/WSL: `python3 -m http.server 8000`. Do not open HTML via `file://`; JSON fetch and ES modules need HTTP.
 
-```bash
-python3 -m http.server 8000
-```
+## Test
+`node tests/models.test.mjs` (Node.js required only for tests, not for running the site).
 
-Open http://localhost:8000 in your browser.
+## Architecture
+- `index.html`, `pages/*.html`: landing and five feature pages
+- `css/styles.css`: common responsive styling
+- `js/site.js`: shared navigation
+- `js/models.js`: pure mathematical models
+- `js/ui.js`: sliders, SVG plots, CSV export
+- `js/{snr,pixel,cds,hdr,readout}.js`: page-specific interactions
+- `config/sensor.json`: default lecture-8-style DCG parameters
+- `MASTER_BUILD_PROMPT.md`: detailed production and verification prompt
 
-The local server allows JavaScript to load `config.json`. If `index.html` is opened directly, the page still works with built-in default parameters but won't load JSON defaults.
+## Audit / educational model notes
+**SNR page**: Analog model assumes SF and bias noise BEFORE programmable analog gain, amplifier and ADC noise AFTER gain, and independent quantization error. All RMS voltages are referenced to the declared stage. Input-referred rms noise computed from stage-referred quadrature sum / (GSF·CG). Photon shot variance = n; PRNU variance = (fraction·n)^2. Individual high/low curves stop at min(PD FWC, ADC swing / (GSF·CG·analog gain)). Combined DCG picks HCG until clip and LCG thereafter. Dynamic range denominator is the solved SNR=1 input electron level (not simply the read-noise RMS). **The model has not been calibrated to reproduce 82.9 dB / 85.3 dB exactly.** Bias/amp noise placement is a modeling assumption; other implementation details can differ in the slides.
 
-## Edit
+**4T page**: Charge accumulation is in PD during exposure, then transferred to FD. The plotted FD voltage is the **equivalent voltage after charge transfer**, versus assumed exposure time, not the literal FD node voltage during shutter operation. Assumes 100% transfer and no charge loss or headroom limits. Reset noise is a single-node kTC estimate at 300 K; CDS may cancel reset noise if samples are correlated appropriately.
 
-- `index.html` — interface
-- `styles.css` — responsive styling
-- `app.js` — controls, sensor noise equations, chart, and CSV export
-- `config.json` — starting sensor parameters and model assumptions
+**CDS page**: Pure ideal difference transfer `H(f)=1-e^{-j2πfT}`. Actual read noise depends on spectra and sample correlation, which are not integrated here. The displayed reset noise is a separate kTC estimate, not post-CDS residual.
 
-## Model
+**HDR page**: DCG uses the SNR-page model. Dual exposure uses simple independent shot + fixed electron read noise at two exposure times, and an ideal noiseless rescaling; no PRNU, motion or blending model.
 
-For a signal of `n` electrons, each readout path has:
+**Readout page**: Analytical fps calculation and illustrative row markers; pulse widths, reset/TG timing, ADC/serializer throughput and multi-frame exposures are not fully scheduled.
 
-- ADC saturation: `min(FWC, Vadc / (CG * analog_gain))`
-- Quantization noise (electrons RMS): `Vadc / (2^bits * sqrt(12) * CG * analog_gain)`
-- Total input-referred noise (electrons RMS): `sqrt(n + read_noise^2 + quant_noise^2 + (n * PRNU)^2)`
-- SNR: `20 * log10(n / total_noise)`
+## Document sources
+Primary: Trygve Willassen, *IN5350/IN9350 CMOS Image Sensor Design — HDR* (2026), slides 5–10, 30–34, 46, 50–52. Baseline default values: CG 200/25 µV/e, GSF .85, PRNU .7%, Vref 640 mV, N=10, four listed 100 µV RMS analog noise contributions, FWC approximately 30ke, HCG analog gain 10.
 
-Conversion gain in those equations is in V/electron. Analog gain is dimensionless. Read noise is treated as an input-referred common constant across both paths. The model assumes uniformly distributed quantization error and independent noise terms. The HCG→LCG combination uses the HCG branch until it clips, then switches to LCG if available.
+Additional: IN5350 2025 pixel readout lectures (CG, ERS formula and noise), pixel architecture (4T and CDS), pixel process (FWC), and lecture 8 exercises. Technical prompt includes the 2021 Häfliger/Mikkelsen research paper as a future module reference.
 
-This is a *simplified educational model*, not a complete physical HDR sensor prediction. In particular, 'combined DR' uses the maximum saturation charge divided by the smaller of the two dark-noise RMS values, which is an optimistic envelope metric and not a rigorously calibrated end-to-end dynamic-range measurement.
+These course materials are **reference sources**, not automatically validated against the simplified website implementation. To demonstrate lecture-level numeric agreement, identify every noise-reference point and saturation definition first.
