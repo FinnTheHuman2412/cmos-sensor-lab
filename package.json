@@ -1,1 +1,10 @@
-{"name":"cmos-sensor-lab","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node tests/models.test.mjs","serve":"python3 -m http.server 8000"}}
+{
+  "name": "cmos-sensor-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/models.test.mjs && node tests/digital-readout.test.mjs",
+    "serve": "python3 -m http.server 8000"
+  }
+}

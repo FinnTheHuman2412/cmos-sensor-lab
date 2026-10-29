@@ -39,3 +39,41 @@ Primary: Trygve Willassen, *IN5350/IN9350 CMOS Image Sensor Design — HDR* (202
 Additional: IN5350 2025 pixel readout lectures (CG, ERS formula and noise), pixel architecture (4T and CDS), pixel process (FWC), and lecture 8 exercises. Technical prompt includes the 2021 Häfliger/Mikkelsen research paper as a future module reference.
 
 These course materials are **reference sources**, not automatically validated against the simplified website implementation. To demonstrate lecture-level numeric agreement, identify every noise-reference point and saturation definition first.
+
+
+## Digital Readout Lab — verified project extension
+
+Open `pages/digital-readout.html` (or use the navigation sidebar) to explore the VHDL controller described in *Design and Verification of a Programmable CMOS Image Sensor Array Controller*, October 2026. It adds five experiments: clock-cycle waveforms, rolling-shutter sequencing, digital CDS/frame reconstruction, a constraint debugger and an architecture explorer.
+
+**Source hierarchy:** the final report provides eight explicit timing fixtures and the default exposure start/stop events. It does **not** specify every RTL clock edge in each pulse. Consequently, browser-created RST/TG/SEL waveforms show illustrative sequential phases and are never labeled observed RTL traces. The default exposure events (21,37,53,69 → 85,101,117,133), 160-cycle frame, 64-cycle exposure and readout order 0–3 are report-derived. The eight regression fixtures are in `js/digital-readout/model.js`.
+
+**Data model:** the example 4×4 matrix is taken from §5.5. Other exposures use a deliberately simplified reference scaling by `tEXP/64`, rounded and clipped to eight bits. `P_CDS = P_reset − P_signal` is digital subtraction only; the UI does not model analog CDS noise attenuation. The 4-columns × cycles-per-sample throughput budget is an illustrative lower bound, not a proven RTL assertion. The scheduler constraint `exposure_rows ≤ vertical_blank_rows` is reported in §5.4.
+
+**Imported RTL data:** On the waveform page, import a JSON file shaped as:
+
+```json
+{
+  "meta": {"source": "GHDL/cocotb VCD-derived RTL trace"},
+  "samples": [
+    {"cycle":0,"clk":0,"frame_active":1,"rst":0,"tg":0,"sel":0,"pixel_valid":0,"column_index":null,"pixel_data":null},
+    {"cycle":1,"clk":1,"frame_active":1,"rst":0,"tg":0,"sel":0,"pixel_valid":0,"column_index":null,"pixel_data":null}
+  ]
+}
+```
+
+Use one row's selected control signals, as indicated by the waveform's `Row` selector. Import is display-only; the webpage does not invoke GHDL or cocotb. To export actual traces, obtain cycle-indexed signals from the original simulation and convert them to this schema.
+
+**Tests:** `npm test` now runs both the original physical-model tests and `tests/digital-readout.test.mjs` (eight report timing fixtures, default exposure event markers, default reconstructed image, digital subtraction and monitor fault detection).
+
+### Integrating into an existing Git checkout
+
+Do not copy `.git` from another directory. Extract this archive and copy its contents **over** the working tree you already cloned, preserving the existing `.git` directory. A safe command from the parent directory is:
+
+```bash
+rsync -av --exclude='.git' ./cmos-sensor-lab/ /path/to/your/existing/cmos-sensor-lab/
+cd /path/to/your/existing/cmos-sensor-lab
+npm test
+git add -A && git commit -m "Add interactive digital readout project lab" && git push
+```
+
+Run `python3 -m http.server 8000` from the repository root, then open `/pages/digital-readout.html`. This static site remains compatible with GitHub Pages.
